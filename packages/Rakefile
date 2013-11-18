@@ -1,0 +1,46 @@
+PKG_NAME = 'etcd'
+PKG_DESCRIPTION = 'etcd'
+PKG_VERSION = '0.1.2'
+PKG_ITERATION = 'ginza1'
+
+basename = "etcd-v#{PKG_VERSION}-Linux-x86_64"
+tarball_url = "https://github.com/coreos/etcd/releases/download/v#{PKG_VERSION}/#{basename}.tar.gz"
+tarball_sha256 = '2bc03993559333649455aadcd0f0b1f16aa4dddf30188171741fcaf0d4fd8a55'
+unpacked_bin = "#{basename}/etcd"
+deb_file = "#{PKG_NAME}_#{PKG_VERSION}-#{PKG_ITERATION}_amd64.deb"
+
+require 'evoker'
+require 'evoker/local_cache'
+require 'rake/clean'
+
+CLEAN.include "#{basename}*"
+CLEAN.include 'destroot'
+
+tarball = Evoker::cached_wget(tarball_url, checksum: tarball_sha256)
+
+file unpacked_bin => tarball do
+  sh "tar -xzf #{tarball}"
+end
+
+desc 'Build the package'
+file deb_file => unpacked_bin do
+  rm_rf 'destroot'
+  %w[/usr/sbin /usr/bin /etc/init /etc/default].each do |dir|
+    mkdir_p "destroot#{dir}"
+  end
+  install "#{basename}/etcd", 'destroot/usr/sbin/etcd', mode: 0755
+  install "#{basename}/etcdctl", 'destroot/usr/bin/etcdctl', mode: 0755
+  install 'upstart.conf', 'destroot/etc/init/etcd.conf', mode: 0644
+  install 'default', 'destroot/etc/default/etcd', mode: 0644
+  chown_R 'root', 'root', 'destroot'
+  sh <<EOF
+fpm -s dir -t deb -C destroot --architecture amd64 --license internal \\
+    --name #{PKG_NAME} --version #{PKG_VERSION} --iteration #{PKG_ITERATION} \\
+    --description '#{PKG_DESCRIPTION}' \\
+    --before-install scripts/preinst \\
+    --config-files /etc/default/etcd \\
+    .
+EOF
+end
+
+task :default => deb_file

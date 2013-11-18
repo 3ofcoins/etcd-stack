@@ -1,0 +1,20 @@
+#!/bin/sh
+
+if ! getent group etcd > /dev/null ; then
+    addgroup --system etcd >/dev/null
+fi
+
+if ! getent passwd etcd > /dev/null ; then
+    adduser \
+	--system \
+        --disabled-login \
+	--ingroup etcd \
+	--home /var/lib/etcd \
+	--gecos "etcd" \
+	--shell /bin/false \
+	etcd >/dev/null
+fi
+
+mkdir -p /var/lib/etcd
+chown etcd:etcd /var/lib/etcd
+chmod 0750 /var/lib/etcd

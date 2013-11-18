@@ -1,0 +1,4 @@
+*.deb
+/cache
+/destroot
+/etcd-v*-Linux-x86_64*
