@@ -32,13 +32,13 @@ file deb_file => unpacked_bin do
   install "#{basename}/etcdctl", 'destroot/usr/bin/etcdctl', mode: 0755
   install 'upstart.conf', 'destroot/etc/init/etcd.conf', mode: 0644
   install 'default', 'destroot/etc/default/etcd', mode: 0644
-  chown_R 'root', 'root', 'destroot'
   sh <<EOF
 fpm -s dir -t deb -C destroot --architecture amd64 --license internal \\
     --name #{PKG_NAME} --version #{PKG_VERSION} --iteration #{PKG_ITERATION} \\
     --description '#{PKG_DESCRIPTION}' \\
     --before-install scripts/preinst \\
     --config-files /etc/default/etcd \\
+    --deb-user root --deb-group root \\
     .
 EOF
 end
