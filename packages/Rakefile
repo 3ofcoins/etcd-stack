@@ -1,7 +1,6 @@
 PKG_NAME = 'etcd'
 PKG_DESCRIPTION = 'etcd'
 PKG_VERSION = '0.1.2'
-PKG_ITERATION = 'ginza1'
 
 basename = "etcd-v#{PKG_VERSION}-Linux-x86_64"
 tarball_url = "https://github.com/coreos/etcd/releases/download/v#{PKG_VERSION}/#{basename}.tar.gz"
@@ -34,7 +33,7 @@ file deb_file => unpacked_bin do
   install 'default', 'destroot/etc/default/etcd', mode: 0644
   sh <<EOF
 fpm -s dir -t deb -C destroot --architecture amd64 --license internal \\
-    --name #{PKG_NAME} --version #{PKG_VERSION} --iteration #{PKG_ITERATION} \\
+    --name #{PKG_NAME} --version #{PKG_VERSION} \\
     --description '#{PKG_DESCRIPTION}' \\
     --before-install scripts/preinst \\
     --config-files /etc/default/etcd \\
